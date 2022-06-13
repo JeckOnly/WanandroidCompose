@@ -37,8 +37,11 @@ import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.jeckonly.core.ui.M
 import com.jeckonly.core.util.LogUtil
 import com.jeckonly.core.util.R
+import com.jeckonly.wanandroidcompose.destinations.HomeScreenDestination
+import com.jeckonly.wanandroidcompose.destinations.SigninScreenDestination
 import com.jeckonly.wanandroidcompose.destinations.SignupScreenDestination
 import com.jeckonly.wanandroidcompose.destinations.SplashScreenDestination
+import com.jeckonly.wanandroidcompose.feature_home.HomeScreen
 import com.jeckonly.wanandroidcompose.feature_signin.event.SigninEvent
 import com.jeckonly.wanandroidcompose.feature_signin.model.SigninScreenAction
 import com.jeckonly.wanandroidcompose.feature_signin.model.SigninScreenState
@@ -89,6 +92,11 @@ fun SigninScreen(
             when(action) {
                 SigninScreenAction.GoHomeScreenSuccess -> {
                     snackbarHostState.showSnackbar("Signin successfully")
+                    navigator.navigate(direction = HomeScreenDestination, builder = {
+                        popUpTo(SigninScreenDestination.route) {
+                            inclusive = true
+                        }
+                    })
                     LogUtil.d("前往 home")
                 }
                 is SigninScreenAction.ShowErrorSnackBar -> {
@@ -328,7 +336,9 @@ fun SigninArea(
                     painter = painterResource(id = R.drawable.icon_right_arrow),
                     contentDescription = null,
                     tint = Color.White,
-                    modifier = M.size(15.dp).rotate(rotateDegree.value)
+                    modifier = M
+                        .size(15.dp)
+                        .rotate(rotateDegree.value)
                 )
             }
         }

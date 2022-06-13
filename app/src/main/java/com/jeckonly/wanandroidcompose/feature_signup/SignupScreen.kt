@@ -37,6 +37,7 @@ import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.jeckonly.core.ui.M
 import com.jeckonly.core.util.LogUtil
 import com.jeckonly.core.util.R
+import com.jeckonly.wanandroidcompose.destinations.HomeScreenDestination
 import com.jeckonly.wanandroidcompose.destinations.SigninScreenDestination
 import com.jeckonly.wanandroidcompose.destinations.SignupScreenDestination
 import com.jeckonly.wanandroidcompose.destinations.SplashScreenDestination
@@ -73,7 +74,6 @@ fun SignupScreen(
     val signupScreenState = viewModel.signupScreenState.collectAsState()
     val scope = rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }
-    var registerSuccess = remember { false }
 
     SideEffect {
         systemUiController.setStatusBarColor(
@@ -86,8 +86,13 @@ fun SignupScreen(
         viewModel.signupScreenAction.collect { action ->
             when(action) {
                 SignupScreenAction.GoHomeScreenSuccess -> {
-                    registerSuccess = true
                     snackbarHostState.showSnackbar("Signup successfully")
+                    navigator.navigate(direction = HomeScreenDestination, builder = {
+                        // NOTE Signup界面的栈下层肯定有一个signin界面，所以要pop up 到sign in
+                        popUpTo(SigninScreenDestination.route) {
+                            inclusive = true
+                        }
+                    })
                     LogUtil.d("前往 home")
                 }
                 SignupScreenAction.GoSignInScreenSuccess -> {

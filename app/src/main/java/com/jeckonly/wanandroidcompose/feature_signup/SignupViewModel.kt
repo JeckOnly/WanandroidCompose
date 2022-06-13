@@ -2,6 +2,10 @@ package com.jeckonly.wanandroidcompose.feature_signup
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.android.aschat.util.JsonUtil
+import com.jeckonly.core.util.SPConstant
+import com.jeckonly.core.util.SPUtil
+import com.jeckonly.wanandroidcompose.WACApplication
 import com.jeckonly.wanandroidcompose.data.util.ResourceState
 import com.jeckonly.wanandroidcompose.domain.repository.LoginRepository
 import com.jeckonly.wanandroidcompose.feature_signup.event.SignupEvent
@@ -77,7 +81,20 @@ class SignupViewModel @Inject constructor(
                                     }
                                 }
                                 is ResourceState.Success -> {
-                                    // TODO do something else
+                                    // 成功注册
+                                    // 1） 下次直接进入首页
+
+                                    // 保存账号密码
+                                    SPUtil.putAndApply(WACApplication.getApplication(), SPConstant.USERNAME, username)
+                                    SPUtil.putAndApply(WACApplication.getApplication(), SPConstant.PASSWORD, password)
+
+                                    val signupSuccessInfo = it.data!!
+                                    val userInfo = signupSuccessInfo.toUserInfo()
+                                    // 保存用户模型
+                                    SPUtil.putAndApply(WACApplication.getApplication(), SPConstant.USER_INFO, JsonUtil.any2Json(userInfo))
+
+                                    // 标记已登录，下次直接进入
+                                    SPUtil.putAndApply(WACApplication.getApplication(), SPConstant.HAD_SIGNIN, true)
                                     _signupScreenAction.emit(SignupScreenAction.GoHomeScreenSuccess)
                                 }
                             }
