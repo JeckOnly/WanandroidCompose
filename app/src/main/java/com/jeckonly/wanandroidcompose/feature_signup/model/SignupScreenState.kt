@@ -1,10 +1,10 @@
-package com.jeckonly.wanandroidcompose.feature_login.model
+package com.jeckonly.wanandroidcompose.feature_signup.model
 
 
 /**
  * login screen界面的状态
  */
-data class LoginScreenState(
+data class SignupScreenState(
     val isLoading: Boolean = false,
     val repasswordNotSameError: Boolean = false,
 )

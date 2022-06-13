@@ -1,9 +1,8 @@
-package com.jeckonly.wanandroidcompose.feature_login
+package com.jeckonly.wanandroidcompose.feature_signin
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.TweenSpec
-import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -38,10 +37,17 @@ import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.jeckonly.core.ui.M
 import com.jeckonly.core.util.LogUtil
 import com.jeckonly.core.util.R
-import com.jeckonly.wanandroidcompose.feature_login.event.LoginEvent
-import com.jeckonly.wanandroidcompose.feature_login.model.LoginScreenAction
-import com.jeckonly.wanandroidcompose.feature_login.model.LoginScreenState
-import com.jeckonly.wanandroidcompose.feature_login.model.UserEnterInfo
+import com.jeckonly.wanandroidcompose.destinations.SignupScreenDestination
+import com.jeckonly.wanandroidcompose.destinations.SplashScreenDestination
+import com.jeckonly.wanandroidcompose.feature_signin.event.SigninEvent
+import com.jeckonly.wanandroidcompose.feature_signin.model.SigninScreenAction
+import com.jeckonly.wanandroidcompose.feature_signin.model.SigninScreenState
+import com.jeckonly.wanandroidcompose.feature_signin.model.SigninUserEnterInfo
+import com.jeckonly.wanandroidcompose.feature_signup.SignupViewModel
+import com.jeckonly.wanandroidcompose.feature_signup.event.SignupEvent
+import com.jeckonly.wanandroidcompose.feature_signup.model.SignupScreenAction
+import com.jeckonly.wanandroidcompose.feature_signup.model.SignupScreenState
+import com.jeckonly.wanandroidcompose.feature_signup.model.SignupUserEnterInfo
 import com.jeckonly.wanandroidcompose.ui.theme.Blue5
 import com.jeckonly.wanandroidcompose.ui.theme.HintColor
 import com.jeckonly.wanandroidcompose.ui.theme.TextColor
@@ -54,9 +60,9 @@ import kotlinx.coroutines.launch
 
 @Destination
 @Composable
-fun LoginScreen(
+fun SigninScreen(
     navigator: DestinationsNavigator,
-    viewModel: LoginViewModel = hiltViewModel()
+    viewModel: SigninViewModel = hiltViewModel()
 ) {
     // Remember a SystemUiController
     val systemUiController = rememberSystemUiController()
@@ -65,13 +71,11 @@ fun LoginScreen(
 
     val userNameTextValue = remember { mutableStateOf("") }
     val passwordTextValue = remember { mutableStateOf("") }
-    val repasswordTextValue = remember { mutableStateOf("") }
     val radioButtonState = remember { mutableStateOf(false) }
 
-    val loginScreenState = viewModel.loginScreenState.collectAsState()
+    val signinScreenState = viewModel.signinScreenState.collectAsState()
     val scope = rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }
-    var registerSuccess = remember { false }
 
     SideEffect {
         systemUiController.setStatusBarColor(
@@ -81,17 +85,13 @@ fun LoginScreen(
     }
 
     LaunchedEffect(key1 = Unit) {
-        viewModel.loginScreenAction.collect { action ->
+        viewModel.signinScreenAction.collect { action ->
             when(action) {
-                LoginScreenAction.GoHomeScreenSuccess -> {
-                    registerSuccess = true
-                    snackbarHostState.showSnackbar("Register successfully")
+                SigninScreenAction.GoHomeScreenSuccess -> {
+                    snackbarHostState.showSnackbar("Signin successfully")
                     LogUtil.d("前往 home")
                 }
-                LoginScreenAction.GoSignInScreenSuccess -> {
-                    LogUtil.d("前往sign in")
-                }
-                is LoginScreenAction.ShowErrorSnackBar -> {
+                is SigninScreenAction.ShowErrorSnackBar -> {
                     snackbarHostState.showSnackbar(action.message)
                 }
             }
@@ -123,13 +123,12 @@ fun LoginScreen(
             alignment = Alignment.Center
         )
 
-        SignUpArea(
+        SigninArea(
             viewModel,
             navigator,
-            loginScreenState,
+            signinScreenState,
             userNameTextValue,
             passwordTextValue,
-            repasswordTextValue,
             radioButtonState,
             modifier = M.constrainAs(signUpArea) {
                 bottom.linkTo(parent.bottom)
@@ -152,13 +151,12 @@ fun LoginScreen(
 }
 
 @Composable
-fun SignUpArea(
-    viewModel: LoginViewModel,
+fun SigninArea(
+    viewModel: SigninViewModel,
     navigator: DestinationsNavigator,
-    loginScreenState: State<LoginScreenState>,
+    signinScreenState: State<SigninScreenState>,
     userNameTextValue: MutableState<String>,
     passwordTextValue: MutableState<String>,
-    repasswordTextValue: MutableState<String>,
     radioButtonState: MutableState<Boolean>,
     modifier: Modifier = Modifier
 ) {
@@ -167,8 +165,8 @@ fun SignUpArea(
     val rotateDegree = remember {
         Animatable(0f)
     }
-    LaunchedEffect(key1 = loginScreenState.value.isLoading) {
-        if (loginScreenState.value.isLoading) {
+    LaunchedEffect(key1 = signinScreenState.value.isLoading) {
+        if (signinScreenState.value.isLoading) {
             rotateDegree.animateTo(360f, infiniteRepeatable(
                 TweenSpec(300)
             ))
@@ -187,10 +185,10 @@ fun SignUpArea(
             .fillMaxWidth()
     ) {
         ConstraintLayout {
-            val (titleText, userText, passwordText, repasswordText, correctRepasswordHint, radioButton, serviceText, signUpText, singInText, commitButton) = createRefs()
+            val (titleText, userText, passwordText, radioButton, rememberMeText, forgotText, signinText, signupText, commitButton) = createRefs()
 
             Text(
-                text = "Get Started",
+                text = "Welcome back",
                 modifier = M.constrainAs(titleText) {
                     top.linkTo(parent.top, 50.dp)
                     start.linkTo(parent.start, 38.dp)
@@ -212,7 +210,7 @@ fun SignUpArea(
                 placeHolderTextColor = HintColor,
                 isPassword = false,
                 modifier = M.constrainAs(userText) {
-                    top.linkTo(titleText.bottom, 35.dp)
+                    top.linkTo(titleText.bottom, 50.dp)
                     start.linkTo(parent.start, 38.dp)
                     end.linkTo(parent.end, 38.dp)
                     width = Dimension.fillToConstraints
@@ -239,40 +237,6 @@ fun SignUpArea(
                 }
             )
 
-            BasicTextFieldWithPlaceHolder(
-                textValue = repasswordTextValue,
-                onValueChange = {
-                    if (it.length <= 20) {
-                        repasswordTextValue.value = it
-                        viewModel.onEvent(LoginEvent.ChangeRepassword)
-                    }
-                },
-                placeHolder = "Repassword",
-                textSize = 16.sp,
-                textColor = TextColor,
-                placeHolderTextColor = HintColor,
-                isPassword = true,
-                modifier = M.constrainAs(repasswordText) {
-                    top.linkTo(passwordText.bottom, 30.dp)
-                    start.linkTo(passwordText.start)
-                    end.linkTo(passwordText.end)
-                    width = Dimension.fillToConstraints
-                }
-            )
-
-            AnimatedVisibility(
-                visible = loginScreenState.value.repasswordNotSameError,
-                modifier = M.constrainAs(correctRepasswordHint) {
-                    top.linkTo(repasswordText.bottom, 6.dp)
-                    start.linkTo(repasswordText.start)
-                }) {
-                Text(
-                    text = "Please enter the correct repassword",
-                    color = Color.Red,
-                    fontSize = 12.sp
-                )
-            }
-
             RadioButton(
                 selected = radioButtonState.value,
                 onClick = {
@@ -280,42 +244,40 @@ fun SignUpArea(
                 },
                 colors = RadioButtonDefaults.colors(Blue5, Blue5, Blue5),
                 modifier = M.constrainAs(radioButton) {
-                    top.linkTo(repasswordText.bottom, 28.dp)
-                    start.linkTo(repasswordText.start, (-12).dp)
+                    top.linkTo(passwordText.bottom, 25.dp)
+                    start.linkTo(passwordText.start, (-12).dp)
                 })
 
             Text(
-                buildAnnotatedString {
-                    withStyle(style = SpanStyle(color = TextColor)) {
-                        append("I agree to the ")
-                    }
-
-                    withStyle(style = SpanStyle(color = Blue5)) {
-                        append("Terms of service ")
-                    }
-                    withStyle(style = SpanStyle(color = TextColor)) {
-                        append("and ")
-                    }
-                    withStyle(style = SpanStyle(color = Blue5)) {
-                        append("Privacy Policy")
-                    }
-                },
-                modifier = M.constrainAs(serviceText) {
+                "Remember me",
+                modifier = M.constrainAs(rememberMeText) {
                     top.linkTo(radioButton.top)
                     bottom.linkTo(radioButton.bottom)
                     start.linkTo(radioButton.end)
-                    end.linkTo(repasswordText.end)
-                    width = Dimension.fillToConstraints
+                    width = Dimension.wrapContent
                 },
-                fontFamily = FontFamily.Serif,
+                color = TextColor,
                 fontSize = 12.sp
             )
 
             Text(
-                text = "Sign Up",
-                modifier = M.constrainAs(signUpText) {
+                "Forgot password?",
+                modifier = M.constrainAs(forgotText) {
+                    top.linkTo(radioButton.top)
+                    bottom.linkTo(radioButton.bottom)
+                    end.linkTo(passwordText.end)
+                    width = Dimension.wrapContent
+                },
+                color = Blue5,
+                fontSize = 12.sp,
+                style = TextStyle(textDecoration = TextDecoration.Underline)
+            )
+
+            Text(
+                text = "Sign In",
+                modifier = M.constrainAs(signinText) {
                     top.linkTo(radioButton.bottom, 30.dp)
-                    start.linkTo(repasswordText.start)
+                    start.linkTo(passwordText.start)
                 },
                 color = Blue5,
                 fontSize = 18.sp,
@@ -323,15 +285,18 @@ fun SignUpArea(
             )
 
             Text(
-                text = "Sing In",
+                text = "Sing Up",
                 modifier = M
-                    .constrainAs(singInText) {
-                        top.linkTo(signUpText.bottom, 20.dp)
+                    .constrainAs(signupText) {
+                        top.linkTo(signinText.bottom, 20.dp)
                         bottom.linkTo(parent.bottom, 30.dp)
-                        start.linkTo(signUpText.start)
+                        start.linkTo(signinText.start)
                     }
                     .clickable {
-                        // TODO: 前往signin
+                        // 前往signup
+                        navigator.navigate(direction = SignupScreenDestination, builder = {
+                            launchSingleTop = true
+                        })
                     },
                 color = Blue5,
                 fontSize = 12.sp,
@@ -341,20 +306,19 @@ fun SignUpArea(
 
             IconButton(onClick = {
                 viewModel.onEvent(
-                    LoginEvent.ClickCommit(
-                        UserEnterInfo(
-                            userNameTextValue.value,
-                            passwordTextValue.value,
-                            repasswordTextValue.value,
-                            radioButtonState.value
+                    SigninEvent.ClickCommit(
+                        SigninUserEnterInfo(
+                            username = userNameTextValue.value,
+                            password = passwordTextValue.value,
+                            rememberMe = radioButtonState.value
                         )
                     )
                 )
             }, modifier = M
                 .constrainAs(commitButton) {
-                    top.linkTo(signUpText.top)
-                    bottom.linkTo(signUpText.bottom)
-                    end.linkTo(repasswordText.end)
+                    top.linkTo(signinText.top)
+                    bottom.linkTo(signinText.bottom)
+                    end.linkTo(passwordText.end)
                 }
                 .background(Blue5, CircleShape)
                 .padding(5.dp)

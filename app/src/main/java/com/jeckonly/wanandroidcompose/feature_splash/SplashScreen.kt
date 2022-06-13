@@ -15,10 +15,13 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavOptions
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.jeckonly.core.ui.M
 import com.jeckonly.core.util.R
-import com.jeckonly.wanandroidcompose.destinations.LoginScreenDestination
+import com.jeckonly.wanandroidcompose.destinations.SigninScreenDestination
+import com.jeckonly.wanandroidcompose.destinations.SignupScreenDestination
+import com.jeckonly.wanandroidcompose.destinations.SplashScreenDestination
 import com.jeckonly.wanandroidcompose.ui.theme.Transparent
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
@@ -36,7 +39,12 @@ fun SplashScreen(
     // 延迟一定时间进行跳转
     LaunchedEffect(key1 = Unit, block = {
         delay(2000L)
-        navigator.navigate(LoginScreenDestination)
+        // 导航到其他界面并弹出splash
+        navigator.navigate(direction = SigninScreenDestination, builder = {
+            popUpTo(SplashScreenDestination.route) {
+                inclusive = true
+            }
+        })
     })
     SideEffect {
         systemUiController.setStatusBarColor(

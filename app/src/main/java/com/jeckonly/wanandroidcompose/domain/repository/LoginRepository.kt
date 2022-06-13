@@ -1,12 +1,12 @@
 package com.jeckonly.wanandroidcompose.domain.repository
 
-import com.jeckonly.wanandroidcompose.data.remote.dto.common.RemoteDto
-import com.jeckonly.wanandroidcompose.data.remote.dto.login.LoginDto
 import com.jeckonly.wanandroidcompose.data.util.ResourceState
-import com.jeckonly.wanandroidcompose.domain.model.login.RegisterSuccessInfo
-import com.jeckonly.wanandroidcompose.feature_login.model.UserEnterInfo
+import com.jeckonly.wanandroidcompose.domain.model.signin.SigninSuccessInfo
+import com.jeckonly.wanandroidcompose.domain.model.signup.SignupSuccessInfo
 import kotlinx.coroutines.flow.Flow
 
 interface LoginRepository {
-    suspend fun signUp(userEnterInfo: UserEnterInfo): Flow<ResourceState<RegisterSuccessInfo>>
+    suspend fun signUp(username: String, password: String, repassword: String): Flow<ResourceState<SignupSuccessInfo>>
+
+    suspend fun signIn(username: String, password: String): Flow<ResourceState<SigninSuccessInfo>>
 }

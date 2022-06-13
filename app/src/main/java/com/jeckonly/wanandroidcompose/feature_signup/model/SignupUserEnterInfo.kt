@@ -1,6 +1,6 @@
-package com.jeckonly.wanandroidcompose.feature_login.model
+package com.jeckonly.wanandroidcompose.feature_signup.model
 
-data class UserEnterInfo(
+data class SignupUserEnterInfo(
     val username: String,
     val password: String,
     val repassword: String,

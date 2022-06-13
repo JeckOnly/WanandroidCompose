@@ -1,6 +1,6 @@
 package com.jeckonly.wanandroidcompose.data.remote.dto.login
 
-data class RegisterDto(
+data class SigninDto(
     val admin: Boolean = false,
     val chapterTops: List<Any> = emptyList(),
     val coinCount: Int = 0,

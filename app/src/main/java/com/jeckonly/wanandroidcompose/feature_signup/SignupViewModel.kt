@@ -1,13 +1,12 @@
-package com.jeckonly.wanandroidcompose.feature_login
+package com.jeckonly.wanandroidcompose.feature_signup
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.jeckonly.wanandroidcompose.data.util.ResourceState
 import com.jeckonly.wanandroidcompose.domain.repository.LoginRepository
-import com.jeckonly.wanandroidcompose.feature_login.event.LoginEvent
-import com.jeckonly.wanandroidcompose.feature_login.model.LoginScreenAction
-import com.jeckonly.wanandroidcompose.feature_login.model.LoginScreenState
-import com.jeckonly.wanandroidcompose.feature_splash.event.SplashEvent
+import com.jeckonly.wanandroidcompose.feature_signup.event.SignupEvent
+import com.jeckonly.wanandroidcompose.feature_signup.model.SignupScreenAction
+import com.jeckonly.wanandroidcompose.feature_signup.model.SignupScreenState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -16,70 +15,70 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class LoginViewModel @Inject constructor(
+class SignupViewModel @Inject constructor(
     private val repo: LoginRepository
 ): ViewModel() {
 
-    private val _loginScreenState: MutableStateFlow<LoginScreenState> = MutableStateFlow(
-        LoginScreenState()
+    private val _signupScreenState: MutableStateFlow<SignupScreenState> = MutableStateFlow(
+        SignupScreenState()
     )
-    val loginScreenState: StateFlow<LoginScreenState> = _loginScreenState
+    val signupScreenState: StateFlow<SignupScreenState> = _signupScreenState
 
-    private val _loginScreenAction: MutableSharedFlow<LoginScreenAction> = MutableSharedFlow()
-    val loginScreenAction: SharedFlow<LoginScreenAction> = _loginScreenAction
+    private val _signupScreenAction: MutableSharedFlow<SignupScreenAction> = MutableSharedFlow()
+    val signupScreenAction: SharedFlow<SignupScreenAction> = _signupScreenAction
 
     private var _changeRepasswordErrorJob: Job? = null
 
-    fun onEvent(event: LoginEvent) {
+    fun onEvent(event: SignupEvent) {
         when(event) {
-            is LoginEvent.ChangeRepassword -> {
+            is SignupEvent.ChangeRepassword -> {
                 _changeRepasswordErrorJob?.let {
                     it.cancel()
                 }
                 _changeRepasswordErrorJob = viewModelScope.launch {
                     // 延迟三秒才发出值，避免不断更新
                     delay(3000L)
-                    _loginScreenState.update {
+                    _signupScreenState.update {
                         it.copy(isLoading = false, repasswordNotSameError = false)
                     }
                 }
             }
-            is LoginEvent.ClickCommit -> {
+            is SignupEvent.ClickCommit -> {
                 // 如果还在加载，就没有必要进来
-                if (_loginScreenState.value.isLoading) return
+                if (_signupScreenState.value.isLoading) return
 
-                val username = event.userEnterInfo.username
-                val password = event.userEnterInfo.password
-                val repassword = event.userEnterInfo.repassword
-                val agreePolicy = event.userEnterInfo.agreePolicy
+                val username = event.signupUserEnterInfo.username
+                val password = event.signupUserEnterInfo.password
+                val repassword = event.signupUserEnterInfo.repassword
+                val agreePolicy = event.signupUserEnterInfo.agreePolicy
 
                 viewModelScope.launch {
                     if (username.isEmpty()) {
-                        _loginScreenAction.emit(LoginScreenAction.ShowErrorSnackBar("Please enter the username"))
+                        _signupScreenAction.emit(SignupScreenAction.ShowErrorSnackBar("Please enter the username"))
                     }else if (password.isEmpty()) {
-                        _loginScreenAction.emit(LoginScreenAction.ShowErrorSnackBar("Please enter the password"))
+                        _signupScreenAction.emit(SignupScreenAction.ShowErrorSnackBar("Please enter the password"))
                     }else if (repassword.isEmpty()) {
-                        _loginScreenAction.emit(LoginScreenAction.ShowErrorSnackBar("Please enter the repassword"))
+                        _signupScreenAction.emit(SignupScreenAction.ShowErrorSnackBar("Please enter the repassword"))
                     }else if (!agreePolicy){
-                        _loginScreenAction.emit(LoginScreenAction.ShowErrorSnackBar("Please agree the policy"))
+                        _signupScreenAction.emit(SignupScreenAction.ShowErrorSnackBar("Please agree the policy"))
                     } else if (password != repassword) {
-                        _loginScreenState.update {
+                        _signupScreenState.update {
                             it.copy(isLoading = false, repasswordNotSameError = true)
                         }
                     }else {
-                        repo.signUp(event.userEnterInfo).collect {
+                        repo.signUp(username, password, repassword).collect {
                             when (it) {
                                 is ResourceState.Error -> {
-                                    _loginScreenAction.emit(LoginScreenAction.ShowErrorSnackBar(it.message?:"Wrong!"))
+                                    _signupScreenAction.emit(SignupScreenAction.ShowErrorSnackBar(it.message?:"Wrong!"))
                                 }
                                 is ResourceState.Loading -> {
-                                    _loginScreenState.update { state ->
+                                    _signupScreenState.update { state ->
                                         state.copy(isLoading = it.isLoading)
                                     }
                                 }
                                 is ResourceState.Success -> {
                                     // TODO do something else
-                                    _loginScreenAction.emit(LoginScreenAction.GoHomeScreenSuccess)
+                                    _signupScreenAction.emit(SignupScreenAction.GoHomeScreenSuccess)
                                 }
                             }
                         }

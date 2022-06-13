@@ -1,8 +1,8 @@
 package com.jeckonly.wanandroidcompose.data.remote
 
 import com.jeckonly.wanandroidcompose.data.remote.dto.common.RemoteDto
-import com.jeckonly.wanandroidcompose.data.remote.dto.login.LoginDto
-import com.jeckonly.wanandroidcompose.data.remote.dto.login.RegisterDto
+import com.jeckonly.wanandroidcompose.data.remote.dto.login.SigninDto
+import com.jeckonly.wanandroidcompose.data.remote.dto.login.SignupDto
 import retrofit2.http.POST
 import retrofit2.http.Query
 
@@ -10,18 +10,18 @@ interface WACApi {
 
 
     @POST(SIGN_IN_URL)
-    suspend fun login(
+    suspend fun signIn(
         @Query("username") username: String,
         @Query("password") password: String
-    ): RemoteDto<LoginDto>
+    ): RemoteDto<SigninDto>
 
 
     @POST(SIGN_UP_URL)
-    suspend fun register(
+    suspend fun signUp(
         @Query("username") username: String,
         @Query("password") password: String,
         @Query("repassword") repassword: String
-    ): RemoteDto<RegisterDto>
+    ): RemoteDto<SignupDto>
 
 
     companion object {
