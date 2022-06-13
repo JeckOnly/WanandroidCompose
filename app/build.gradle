@@ -99,8 +99,9 @@ dependencies {
     implementation "androidx.constraintlayout:constraintlayout-compose:1.0.1"
 
     // Compose Nav Destinations
-    implementation 'io.github.raamcosta.compose-destinations:core:1.1.2-beta'
-    ksp 'io.github.raamcosta.compose-destinations:ksp:1.1.2-beta'
+    implementation 'io.github.raamcosta.compose-destinations:core:1.5.9-beta'
+    implementation 'io.github.raamcosta.compose-destinations:animations-core:1.5.9-beta'
+    ksp 'io.github.raamcosta.compose-destinations:ksp:1.5.9-beta'
 
     //Dagger - Hilt
     implementation "com.google.dagger:hilt-android:2.40.5"
