@@ -4,6 +4,8 @@ import android.app.Application
 import com.jeckonly.wanandroidcompose.data.remote.WACApi
 import com.jeckonly.wanandroidcompose.data.remote.intercepter.AddCookiesInterceptor
 import com.jeckonly.wanandroidcompose.data.remote.intercepter.SaveCookiesInterceptor
+import com.jeckonly.wanandroidcompose.data.remote_news.NewsApi
+import com.jeckonly.wanandroidcompose.data.remote_news.intercepter.AddHeaderInterceptor
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -31,6 +33,20 @@ object AppModule {
                 .addInterceptor(HttpLoggingInterceptor().apply { level = HttpLoggingInterceptor.Level.BASIC })
                 .addInterceptor(SaveCookiesInterceptor(app))
                 .addInterceptor(AddCookiesInterceptor(app))
+                .build())
+            .build()
+            .create()
+    }
+
+    @Provides
+    @Singleton
+    @Named("NewsApi")
+    fun provideNewsApi(app: Application): NewsApi {
+        return Retrofit.Builder()
+            .baseUrl(NewsApi.BASE_URL)
+            .addConverterFactory(GsonConverterFactory.create())
+            .client(OkHttpClient.Builder()
+                .addInterceptor(AddHeaderInterceptor())
                 .build())
             .build()
             .create()
